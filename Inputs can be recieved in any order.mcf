@@ -1,4 +1,0 @@
-[!(threads||RTS)*](<!threads*.threads.!RTS*.RTS>true 
-&&
-<!RTS*.RTS.!threads*.threads>true)
-

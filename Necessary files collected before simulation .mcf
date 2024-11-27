@@ -1,0 +1,6 @@
+[!NetworkFile*]<true*.NetworkFile>true &&
+[true*.NetworkFile]<true*.BusStopFile>true &&
+[true*.NetworkFile]<true*.TripsFile>true &&
+[!LaneData*]<true*.LaneData>true &&
+[!EdgeData*]<true*.EdgeData>true &&
+[!Rerouter*]<true*.Rerouter>true 

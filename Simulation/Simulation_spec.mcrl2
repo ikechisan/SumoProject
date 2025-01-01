@@ -1,0 +1,36 @@
+act 
+	BBsend, BBreceive, BoundingBox, RTSsend, RTSreceive, RTS, writeOSMfile, readOSMfile, OSMfile, NCOsend, NCOreceive, NCO, writeNetworkFile, readNetworkFile, NetworkFile, GTFSsend, GTFSrcv, GTFS, DoYsend, DoYrcv, DoY, writeBusStopFile, readBusStopFile, BusStopFile, DWPsend, DWPrcv, DWP, writeTripsFile, readTripsFile, TripsFile, threadsend, threadrcv, threads,  seedsend, seedrcv, seeds, beginsimulate, endsimulate, simulation, writeEdgeData, writeLaneData, writeRerouter, readEdgeData, readLaneData, readRerouter, EdgeData, LaneData, Rerouter, og;
+
+proc 
+	Input = (BBsend.RTSsend + RTSsend.BBsend + RTSsend|BBsend).NCOsend.((GTFSsend.DoYsend + DoYsend.GTFSsend).DWPsend + DWPsend.(GTFSsend.DoYsend + DoYsend.GTFSsend)).(threadsend.seedsend + seedsend.threadsend);
+	OSMget = (BBreceive.RTSreceive + RTSreceive.BBreceive + RTSreceive|BBreceive).writeOSMfile;
+
+	OSMbuild = (readOSMfile.NCOreceive + NCOreceive.readOSMfile + readOSMfile|NCOreceive).writeNetworkFile; 
+	
+	
+	GTFS_to_PT = ((GTFSrcv.DoYrcv + DoYrcv.GTFSrcv + GTFSrcv|DoYrcv).readNetworkFile + readNetworkFile.(GTFSrcv.DoYrcv + DoYrcv.GTFSrcv + GTFSrcv|DoYrcv)).writeBusStopFile;
+	RandomTrips = (DWPrcv.readNetworkFile + readNetworkFile.DWPrcv).writeTripsFile;
+
+	
+	PT = ((GTFSrcv.DoYrcv + DoYrcv.GTFSrcv + GTFSrcv|DoYrcv).RandomTrips + RandomTrips.(GTFSrcv.DoYrcv + DoYrcv.GTFSrcv + GTFSrcv|DoYrcv)).writeBusStopFile.CreateAdditionalFiles.RunSeedsBatch + (DWPrcv.GTFS_to_PT + GTFS_to_PT.DWPrcv).writeTripsFile.CreateAdditionalFiles.RunSeedsBatch;
+
+	CreateAdditionalFiles = writeEdgeData.writeLaneData.writeRerouter + writeEdgeData.writeRerouter.writeLaneData + writeLaneData.writeEdgeData.writeRerouter + writeLaneData.writeRerouter.writeEdgeData + 									writeRerouter.writeLaneData.writeEdgeData + writeRerouter.writeEdgeData.writeLaneData;
+%	ReadAdditionalFiles = readEdgeData.readLaneData.readRerouter + readEdgeData.readRerouter.readLaneData + readLaneData.readEdgeData.readRerouter + readLaneData.readRerouter.readEdgeData + 									readRerouter.readLaneData.readEdgeData + readRerouter.readEdgeData.readLaneData;
+
+	CreateConfigFile = (PT||P1||P2||readEdgeData||readLaneData||readRerouter);
+	P1 = readTripsFile.readBusStopFile;
+	P2 = readBusStopFile.readTripsFile;
+	RunSeedsBatch = (threadrcv+seedrcv).(seedrcv+threadrcv).beginsimulate;
+
+	Simulation = endsimulate;
+
+init allow({BoundingBox, RTS, OSMfile, NCO, DoY, GTFS, NetworkFile, BusStopFile, DWP, TripsFile, EdgeData, LaneData, Rerouter, threads, seeds, simulation},
+	comm({BBsend|BBreceive -> BoundingBox, 
+			RTSsend|RTSreceive -> RTS, 
+			NCOsend|NCOreceive -> NCO,
+			writeOSMfile|readOSMfile -> OSMfile,
+			DoYsend|DoYrcv -> DoY, GTFSsend|GTFSrcv -> GTFS, writeNetworkFile|readNetworkFile -> NetworkFile, DWPsend|DWPrcv -> DWP,
+			writeBusStopFile|readBusStopFile -> BusStopFile, writeTripsFile|readTripsFile -> TripsFile, threadsend|threadrcv -> threads,
+			writeEdgeData|readEdgeData -> EdgeData, readLaneData|writeLaneData -> LaneData, writeRerouter|readRerouter -> Rerouter,
+			seedsend|seedrcv -> seeds, beginsimulate|endsimulate -> simulation},
+			Input||OSMget||OSMbuild||CreateConfigFile||Simulation));

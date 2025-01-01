@@ -1,0 +1,17 @@
+act BBsend, BBreceive, BoundingBox, RTSsend, RTSreceive, RTS, write_OSMfile, read_OSMfile, OSMfile, NCOsend, NCOreceive, NCO, writeNetworkFile, readNetworkFile, NetworkFile, GTFSsend, GTFSrcv, GTFS, DoYsend, DoYrcv, DoY, writeBusStopFile, readBusStopFile, BusStopFile, DWPsend, DWPrcv, DWP, writeTripsFile, readTripsFile, TripsFile;
+
+proc Input = ((GTFSsend.DoYsend + DoYsend.GTFSsend).DWPsend + DWPsend.(GTFSsend.DoYsend + DoYsend.GTFSsend));
+	GTFS_to_PT = ((GTFSrcv.DoYrcv + DoYrcv.GTFSrcv).readNetworkFile + readNetworkFile.(GTFSrcv.DoYrcv + DoYrcv.GTFSrcv )).writeBusStopFile;
+	RandomTrips = (DWPrcv.readNetworkFile + readNetworkFile.DWPrcv).writeTripsFile;
+
+	
+	GTFSTrips = ((GTFSrcv.DoYrcv + DoYrcv.GTFSrcv + GTFSrcv|DoYrcv).RandomTrips + RandomTrips.(GTFSrcv.DoYrcv + DoYrcv.GTFSrcv + GTFSrcv|DoYrcv)).writeBusStopFile + (DWPrcv.GTFS_to_PT + GTFS_to_PT.DWPrcv).writeTripsFile;
+
+init allow({DoY, GTFS, readNetworkFile, writeBusStopFile, DWP, writeTripsFile},
+	comm({BBsend|BBreceive -> BoundingBox, 
+			RTSsend|RTSreceive -> RTS, 
+			NCOsend|NCOreceive -> NCO,
+			write_OSMfile|read_OSMfile -> OSMfile,
+			DoYsend|DoYrcv -> DoY, GTFSsend|GTFSrcv -> GTFS, writeNetworkFile|readNetworkFile -> NetworkFile, DWPsend|DWPrcv -> DWP,
+			writeBusStopFile|readBusStopFile -> BusStopFile, writeTripsFile|readTripsFile -> TripsFile},
+			Input||GTFSTrips));

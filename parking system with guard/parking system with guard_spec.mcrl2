@@ -1,0 +1,23 @@
+act 
+insTicket, acceptTicket, allowEntry, entryPermission, ticket, entry, turnOff, shutdown;
+
+proc
+ ParkingGate = acceptTicket.(allowEntry + shutdown).ParkingGate 
++ shutdown;
+
+ Vehicle = insTicket.entryPermission.Vehicle;
+ 
+
+ Subsystem = allow({ticket, entry, turnOff},
+comm({insTicket | acceptTicket -> ticket,
+allowEntry | entryPermission -> entry},
+Vehicle || ParkingGate
+));
+ Guard = turnOff.Guard;
+
+
+%init allow({ticket, entry, shutdown},
+%comm({turnOff | turnOff -> shutdown},
+%Subsystem || Guard
+%));
+init ParkingGate;

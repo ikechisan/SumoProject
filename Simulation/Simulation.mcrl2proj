@@ -1,0 +1,10 @@
+<root>
+ <spec>Simulation_spec.mcrl2</spec>
+ <properties>
+  <property>no deadlock</property>
+  <property>n1</property>
+  <property>n2</property>
+  <property>n3</property>
+  <property>n4</property>
+ </properties>
+</root>

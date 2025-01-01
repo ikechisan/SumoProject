@@ -1,0 +1,12 @@
+act 
+	insTicket, acceptTicket, allowEntry, entryPermission, ticket, entry, shutdown, stop;
+
+proc
+	ParkingGate = acceptTicket.allowEntry.ParkingGate + shutdown;
+	Vehicle = insTicket.entryPermission.Vehicle;
+
+init allow({ticket, entry, shutdown},
+  comm({insTicket | acceptTicket -> ticket,
+        allowEntry | entryPermission -> entry},
+       Vehicle || ParkingGate)
+);

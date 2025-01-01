@@ -1,0 +1,17 @@
+act BBsend, BBreceive, BoundingBox, RTSsend, RTSreceive, RTS, write_OSMfile, read_OSMfile, OSMfile, NCOsend, NCOreceive, NCO, writeNetworkFile, readNetworkFile, NetworkFile;
+%, GTFSsend, GTFSrcv, GTFS, DoYsend, DoYrcv, DoY, writeBusStopFile, readBusStopFile, BusStopFile, OSG, OSB, DWPsend, DWPrcv, DWP, writeTripsFile, readTripsFile, TripsFile, threadsend, threadrcv, NumberOfThreads,  seedsend, seedrcv, Seeds, beginsimulate, endsimulate, simulation;
+
+proc Input = (BBsend.RTSsend + RTSsend.BBsend).NCOsend;
+	OSMget = (BBreceive.RTSreceive + RTSreceive.BBreceive).write_OSMfile;
+	OSMbuild = (read_OSMfile.NCOreceive + NCOreceive.read_OSMfile).writeNetworkFile.delta; 
+
+init allow({BoundingBox, RTS, OSMfile, NCO, writeNetworkFile},
+	comm({BBsend|BBreceive -> BoundingBox, 
+			RTSsend|RTSreceive -> RTS, 
+			NCOsend|NCOreceive -> NCO,
+			write_OSMfile|read_OSMfile -> OSMfile
+%			DoYsend|DoYrcv -> DoY, GTFSsend|GTFSrcv -> GTFS, writeNetworkFile|readNetworkFile -> NetworkFile, DWPsend|DWPrcv -> DWP,
+%			writeBusStopFile|readBusStopFile -> BusStopFile, writeTripsFile|readTripsFile -> TripsFile, threadsend|threadrcv -> NumberOfThreads, 
+%			seedsend|seedrcv -> Seeds, beginsimulate|endsimulate -> simulation
+},
+			Input||OSMget||OSMbuild));
